@@ -1,5 +1,8 @@
 TCPseq data analysis pipeline.
 
+UPDATE 6/9/16:
+For steps involving STAR, issue 143 may affect running. The work-around is to delete the --readFilesCommand zcat part and use --readFilesIn <(zcat filename.gz) as per https://github.com/alexdobin/STAR/issues/143
+
 The pipeline below requires software dependencies that are all included in the virtual machine http://bioinformatics.erc.monash.edu/home/powell/TCPseq.box. For further information on how this VM was generated see vagrant/README.txt and vagrant/setup.sh.
 
 The TCPseq pipeline is divided into two parts:

@@ -85,7 +85,7 @@ done
 cd mapped
 for i in $(seq $FNUM); do
   bn=${FQ_HNDL[$i]}
-  STAR --readFilesCommand zcat --genomeDir $MRI_S --runThreadN $NCORES --outFilterMultimapNmax 20000  --readFilesIn noRTS_$bn.fq.gz\
+  STAR --genomeDir $MRI_S --runThreadN $NCORES --outFilterMultimapNmax 20000  --readFilesIn <(zcat noRTS_$bn.fq.gz) \
     --outFileNamePrefix noRTS_v_orf1000exdub_$bn  2> noRTS_v_orf1000exdub_$bn.txt
 done
 
