@@ -58,7 +58,7 @@ do curl $GBK_PREFIX$chr$GBK_SUFFIX.gz | gunzip > genbank/$GBK_FILE_PREFIX$chr$GB
 done
 
 perl ../scripts/make_flanked_spliced_RNAs.pl -5p 50 -3p 50 -t snoRNA misc_RNA -dir genbank -out structRNAs/structRNAs.fa
-STAR --genomeChrBinNbits 8 --runMode genomeGenerate --genomeDir structRNAs/STAR --genomeFastaFiles structRNAs/structRNAs.fa
+STAR $STAR_BUILD --runMode genomeGenerate --genomeDir structRNAs/STAR --genomeFastaFiles structRNAs/structRNAs.fa
 mv Log.out structRNAs/STAR/
 cd ../
 
@@ -69,7 +69,7 @@ cd ../
 
 cd sacCer3
 perl ../scripts/make_flanked_spliced_RNAs.pl -5p 1000 -3p 1000 -t mRNA -exdub yes -dir genbank -out mRNAs_1000flank/mRNAs_1000flank.fa
-STAR --genomeChrBinNbits 8 --runMode genomeGenerate --genomeDir mRNAs_1000flank/STAR --genomeFastaFiles mRNAs_1000flank/mRNAs_1000flank.fa
+STAR $STAR_BUILD --runMode genomeGenerate --genomeDir mRNAs_1000flank/STAR --genomeFastaFiles mRNAs_1000flank/mRNAs_1000flank.fa
 mv Log.out mRNAs_1000flank/STAR/
 cd ../
 

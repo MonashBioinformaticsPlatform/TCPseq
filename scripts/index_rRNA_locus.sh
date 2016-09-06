@@ -12,6 +12,6 @@ zcat orig/$FA_FILE | \
     fold -w60 >> \
     rRNA_locus/$RRNA_FILE
 echo "" >> rRNA_locus/$RRNA_FILE
-STAR --genomeChrBinNbits 8 --runMode genomeGenerate --genomeDir rRNA_locus/STAR --genomeFastaFiles rRNA_locus/$RRNA_FILE
+STAR $STAR_BUILD --runMode genomeGenerate --genomeDir rRNA_locus/STAR --genomeFastaFiles rRNA_locus/$RRNA_FILE
 mv Log.out rRNA_locus/STAR
 

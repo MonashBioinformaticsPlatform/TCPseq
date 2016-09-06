@@ -19,6 +19,9 @@ UTR5P_URL=http://downloads.yeastgenome.org/published_datasets/Nagalakshmi_2008_P
 UTR5P_FILE=Nagal_5pUTRs.bed # $TCPDIR/sacCer3/annotation/
 UTR3P_URL=http://downloads.yeastgenome.org/published_datasets/Nagalakshmi_2008_PMID_18451266/track_files/Nagalakshmi_2008_3UTRs_V64.bed
 UTR3P_FILE=Nagal_3pUTRs.bed # $TCPDIR/sacCer3/annotation/
+STAR_BUILD="--genomeChrBinNbits 8 --genomeSAindexNbases 10  --genomeSAsparseD 2"
+
+
 
 ############ DO NOT EDIT BELOW THIS LINE UNLESS YOU KNOW WHAT YOU ARE DOING ############
 RRI_S=../sacCer3/rRNA_locus/STAR
