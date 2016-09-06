@@ -1,7 +1,7 @@
 #!/bin/bash
 source TCPseq_config.sh
 cd mapped
-for i in $(seq 0 $FNUM); do
+for i in $(seq $FNUM); do
   bn=${FQ_HNDL[$i]}
   # Map to rRNA locus with STAR (both strands)
   STAR --outSAMunmapped Within --genomeDir $RRI_S --runThreadN $NCORES --outFilterMultimapNmax 20000  \
