@@ -23,7 +23,7 @@ curl -sL http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/Trimmoma
   && sudo unzip trimmomatic.zip -d /usr/local
 sudo sh -c 'cat > /usr/local/bin/trimmomatic' <<EOM
 #!/bin/bash
-exec java -Xmx3g -jar "/usr/local/Trimmomatic-0.33/trimmomatic-0.33.jar" $@
+exec java -Xmx3g -jar "/usr/local/Trimmomatic-0.33/trimmomatic-0.33.jar" \$@
 EOM
 sudo chmod +x /usr/local/bin/trimmomatic
 rm trimmomatic.zip
