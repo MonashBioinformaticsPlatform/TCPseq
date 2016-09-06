@@ -47,7 +47,7 @@ cat >>~/.bash_profile <<EOM
 if [ ! -e /vagrant/TCPseq ];
 then
   echo "########## Copying initial TCPseq files into shared directory"
-  rsync -a --exclude vagrant --exclude .git ~/TCPseq /vagrant
+  rsync -a ~/TCPseq /vagrant
 fi
 cd /vagrant/TCPseq
 EOM
@@ -61,9 +61,13 @@ Welcome to the TCPseq vagrant box
 
 EOM
 
+# Checkout the repo
+git clone https://github.com/MonashBioinformaticsPlatform/TCPseq.git
+
 # Put the STAR wrapper in place
 sudo cp ~/TCPseq/vagrant/STAR-wrapper.sh /usr/local/bin/STAR
 sudo chmod +x /usr/local/bin/STAR
 
 # Now build all the TCPseq refs
 (cd ~/TCPseq ; bash ./scripts/setup_vbox.sh)
+
