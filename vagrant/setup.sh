@@ -14,7 +14,8 @@ sudo apt-get install -y samtools r-base-core trimmomatic r-cran-reshape2 r-cran-
 mkdir STAR-tmp && cd STAR-tmp \
  && curl -sL https://github.com/alexdobin/STAR/archive/2.5.2a.tar.gz > star.tgz \
  && tar xzf star.tgz \
- && sudo cp */bin/Linux_x86_64_static/* /usr/local/bin \
+ && sudo mv */bin/Linux_x86_64_static/* /usr/local/bin \
+ && sudo mv /usr/local/bin/STAR /usr/local/bin/STAR.orig \
  && cd ~ && rm -rf STAR-tmp
 
 ## Trimmomatic
@@ -59,6 +60,10 @@ sudo sh -c 'cat > /etc/motd' <<EOM
 Welcome to the TCPseq vagrant box
 
 EOM
+
+# Put the STAR wrapper in place
+sudo cp ~/TCPseq/vagrant/STAR-wrapper.sh /usr/local/bin/STAR
+sudo chmod +x /usr/local/bin/STAR
 
 # Now build all the TCPseq refs
 (cd ~/TCPseq ; bash ./scripts/setup_vbox.sh)
