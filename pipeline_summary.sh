@@ -9,7 +9,7 @@
 # Set up the TCPseq VM and log in
 mkdir TCP_VM
 cd TCP_VM
-vagrant init http://bioinformatics.erc.monash.edu/home/powell/TCPseq.box
+vagrant init http://bioinformatics.erc.monash.edu/TCPseq/vm/TCPseq.box
 vagrant up
 mkdir input_data # make a folder for the input fastq files
 vagrant ssh
@@ -22,7 +22,7 @@ git pull
 # Read the corresponding readme.md file.
 
 # (optional:) Download test dataset:
-curl http://bioinformatics.erc.monash.edu/home/sarcher/TCPseq_20K_reads/input_data.tar | tar -C ../input_data -xf  -
+curl http://bioinformatics.erc.monash.edu/TCPseq/vm/input_data.tar | tar -C ../input_data -xf  -
 # Note: alternatively, you must transfer your fastq files to the input_data directory you created above
 
 ###########################
