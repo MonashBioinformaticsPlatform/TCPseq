@@ -14,13 +14,15 @@ vagrant up
 mkdir input_data # make a folder for the input fastq files
 vagrant ssh
 
-# From the TCPseq VM:
-
+##################################################################################
+# STEP 144
 # (optional:) Update pipeline from GitHub
-# close the pipeline_summary.sh file (and any other open file from the TCPseq repository) then type:
+# From the TCPseq VM, close the pipeline_summary.sh file (and any other open file from the TCPseq repository) then type:
 git pull
 # Read the corresponding readme.md file.
 
+##################################################################################
+# STEP 145
 # (optional:) Download test dataset:
 curl http://bioinformatics.erc.monash.edu/TCPseq/vm/input_data.tar | tar -C ../input_data -xf  -
 # Note: alternatively, you must transfer your fastq files to the input_data directory you created above
@@ -32,7 +34,7 @@ curl http://bioinformatics.erc.monash.edu/TCPseq/vm/input_data.tar | tar -C ../i
 # Note: all steps require returning to the /vagrant/TCPseq directory
 
 ##################################################################################
-# STEP 1
+# STEP 146
 # Initiate certain variables.
 source TCPseq_config.sh
 # Notes:
@@ -45,7 +47,7 @@ source TCPseq_config.sh
 
 
 ##################################################################################
-# STEP 2
+# STEP 147
 # a) Trim poor-quality bases (where av qual < 24 over a sliding window of 7 nt), keep only reads > 26 nt long
 # b) Select only those with a p(A) tract of at least 12 consecutive 'A's. Remove the p(A) tract and everything 3' of the tract.
 cd trimmed
@@ -57,7 +59,7 @@ done
 
 
 ##################################################################################
-# STEP 3.
+# STEP 148.
 # a) Salvage reads (~1%) having 5' adapter sequences by trimming them away.
 # b) Keep only reads whose remaining sequence is 14 nt long or more
 cd trimmed
@@ -69,7 +71,7 @@ done
 
 
 ##################################################################################
-# STEP 4.
+# STEP 149.
 # Filter out reads that map to -
 # a) rRNA
 # b) tRNA
@@ -79,7 +81,7 @@ done
 
 
 ##################################################################################
-# STEP 5.
+# STEP 150.
 # Map to ORFs + 1kb flanking
 
 cd mapped
@@ -91,7 +93,7 @@ done
 
 
 #################################################################################################################
-# STEP 6.
+# STEP 151.
 # Convert SAM format to a table using custom Perl script sam2table_v2.pl.
 
 cd tabulated_data
@@ -106,7 +108,7 @@ done
 
 
 ###################################################################################################################
-# STEP 7.
+# STEP 152.
 # i) removes alignments < 16 nt long
 # ii) Add template-specified p(A) tract information for reads ending at a p(A) tract
 # iii) Rearrange columns to be consistent with zero-based bed format
@@ -116,7 +118,7 @@ python ../scripts/index_A_tracts.py -p tbl1_ -h $FQ_HNDL_STRNG -s _min17.txt.gz 
 
 
 ###################################################################################################################
-# STEP 8.
+# STEP 153.
 # Tweak a few things in the data prior to visualization
 # a) For ambiguous 3' ends append a randomly selected 3' coordinate from all possible 3' ends
 # b) Classify FPs according to location on transcript (5' UTR / start codon / ORF / Stop codon / 3' UTR)
@@ -127,7 +129,6 @@ python ../scripts/index_A_tracts.py -p tbl1_ -h $FQ_HNDL_STRNG -s _min17.txt.gz 
 # e) merges with gene information, UTR information
 # f) Flags FPs within 30nt of downstream or upstream ORFs
 
-source TCPseq_config.sh
 cd tabulated_data
 for i in $(seq $FNUM); do
   bn=${FQ_HNDL[$i]}
@@ -140,21 +141,12 @@ done
 
 
 ###################################################################################################################
-# STEP 9.
+# STEP 155.
 # (Optional) Get gene-level metrics
 
  Rscript ../scripts/gene_level_metrics.R ../../input_data/input_filenames_manual.txt glm_out_
 # Notes:
 # To filter by logical columns, add 3rd argument containing column names (preceding NOT inverts the flags) separated by commas (no spaces), e.g.:
 # Rscript ../scripts/gene_level_metrics.R ../../input_data/input_filenames_manual.txt glm_out_ NOTmanually_flagged,within_Nagalakshmi_transcript
-
-
-
-
-
-
-
-
-
 
 
