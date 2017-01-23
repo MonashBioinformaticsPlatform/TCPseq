@@ -143,6 +143,5 @@ for fn_in in tbl_fns:
                         print splut
                         print 'New bed file line:'
                         print bedline
-                        print cdsc
                 count += 1
                 print  >> fout, "\t".join(str(x) for x in bedline)
