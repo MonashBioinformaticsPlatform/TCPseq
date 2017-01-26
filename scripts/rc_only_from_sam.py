@@ -17,6 +17,7 @@ with open(input_sam, 'r') as fin:
             continue
         if splut[0] != curr_read:
             if not forward and primary != "":
+                # print the read to STDOUT if it never mapped in a forward orientation
                 print primary
             forward = False
             primary = ""
@@ -26,3 +27,6 @@ with open(input_sam, 'r') as fin:
             forward = True
         if not (flag & 0x100):  # if not (secondary alignment)
             primary = "\n".join([ "@"+splut[0], splut[9], "+", splut[10] ])
+# print the very last read if it never mapped in a forward orientation
+if not forward and primary != "":
+    print primary
