@@ -203,7 +203,7 @@ plot_joint_frq <- function(dens_df, xlim_s=c(-100,100), ylim_s=c(0,100), legend=
   return (gr)
 }
 
-gr3=plot_joint_frq(dens_df = slfrq, xlim_s = ROI, legend = F, add_tickbreaks =F, zeroline = F, ybreak=5, ylim_s=FLEN_LIM)
+gr3=plot_joint_frq(dens_df = slfrq, xlim_s = ROI, legend = T, add_tickbreaks =F, zeroline = F, ybreak=5, ylim_s=FLEN_LIM)
 pdf(file=paste0(OUTFN_PREF, '_fl_pos_jnt.pdf'), width = OUTWIDTH, height=OUTHEIGHT)
   print(gr3)
 dev.off()

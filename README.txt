@@ -39,6 +39,11 @@ loaded via a namespace (and not attached):
  [9] stringi_1.1.2    lazyeval_0.2.0   tools_3.3.2      stringr_1.1.0
 [13] munsell_0.4.3    colorspace_1.3-2 tibble_1.2
 
+Example of how to run the genewise bootstrapping script and the plotting script on the 'tbl3_' bed files (100 resamples) :
+mkdir mtgn
+python scripts/metagene_agg.py -b tabulated_data/tbl3_169_100Kreads.bed.gz -g sacCer3/annotation/genetable_dist_to_nextgene.txt -o mtgn/sa169 -p 100
+Rscript scripts/dens_plt.R -i mtgn/sa169 -l -30 -r 20
+
 ----------------------------------------------------------------------
 
 UPDATE 6/9/16:
