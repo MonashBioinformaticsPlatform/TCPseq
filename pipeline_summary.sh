@@ -148,5 +148,8 @@ done
 # Notes:
 # To filter by logical columns, add 3rd argument containing column names (preceding NOT inverts the flags) separated by commas (no spaces), e.g.:
 # Rscript ../scripts/gene_level_metrics.R ../../input_data/input_filenames_manual.txt glm_out_ NOTmanually_flagged,within_Nagalakshmi_transcript
-
+#
+# UPDATE 30/1/17:
+# For large files the above R process might be killed or error out. An equivalent Python script which will work with large files is now available (requires PANDAS). e.g.:
+# python ../scripts/gene_level_metrics.py ../../input_data/input_filenames_manual.txt glm_out_ NOTmanually_flagged,within_Nagalakshmi_transcript
 
