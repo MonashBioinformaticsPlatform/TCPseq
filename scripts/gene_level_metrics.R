@@ -34,7 +34,7 @@ filter_df = function(df, filt_cols){
     cn2 = sub(x = cn, pattern = '^NOT', replacement = '')
     if (cn2 %in% colnames(df)){
       rowfilt = as.logical(df[,cn2])
-      if (cn2 != cn ){  # invert filter as user specified a '!'
+      if (cn2 != cn ){  # invert filter as user specified a 'NOT'
         rowfilt = !rowfilt
       }
       
@@ -43,6 +43,7 @@ filter_df = function(df, filt_cols){
       rowfilt = T
     }
     filt_all = filt_all & rowfilt
+    #print(paste0('Bed entries filtered out: ', sum(!rowfilt)))
   }
   return(df[filt_all,])
 }
@@ -67,16 +68,19 @@ samples2 = read.table(file = SAMPLES_FN, header = TRUE, quote = '', sep = "\t", 
 #extrem = read.table(file = EXTREM_FN,
 #                    quote = '', sep = "\t", header=TRUE, comment.char = '')
 
-print ('Samples in table:')
 for (samp in unique(samples2$sample)){
   print (samp)
   first=T
   for (rw in which( samples2$sample == samp )){
-      tempbed = read.table(file=gzfile(paste0(BEDFILES_PREFIX, samples2$file_uniq[rw], BEDFILES_SUFFIX)), header = TRUE, quote = '', sep = "\t", comment.char = '')
+      infilename=paste0(BEDFILES_PREFIX, samples2$file_uniq[rw], BEDFILES_SUFFIX)
+      print (paste0( 'Processing file: ', infilename))
+      tempbed = read.table(file=gzfile(infilename), header = TRUE, quote = '', sep = "\t", comment.char = '')
       tempbed$fraction = samples2$fraction[rw]
+      orig_reads=nrow(tempbed)
       if (length(user_filters)>0){
         tempbed=filter_df(tempbed, user_filters)
       }
+      print (paste0( 'Excluded ', orig_reads-nrow(tempbed), ' of ', orig_reads, ' reads.'  ))
       if(first){
         all_samp_beds = tempbed 
         first=F
@@ -89,6 +93,7 @@ for (samp in unique(samples2$sample)){
   pc_g_f_wide = dcast(data =  pc_g_f, fun.aggregate = sum, value.var = 'freq', formula = gene ~ fraction + pos_class)
   print (paste0('Summary of ', samp, ":"))
   print(summary(pc_g_f_wide))
+  pc_g_f_wide=pc_g_f_wide[order(as.character(pc_g_f_wide$gene)),]
   write.table(pc_g_f_wide, file = paste0(OUT_PREFIX, samp, '.txt'), quote = F, sep = '\t', col.names = T, row.names = F)             
 }
 
