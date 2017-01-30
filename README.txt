@@ -1,8 +1,13 @@
 TCPseq data analysis pipeline.
 
+UPDATE 27/1/17 (2):
+Installed PANDAS:
+$ sudo pip install pandas
+# pandas (0.19.2) 
+
 ----------------------------------------------------------------------
 
-UPDATE 27/1/17:
+UPDATE 27/1/17 (1):
 This development branch (not fully tested) uses R3.3.2 and some extra R packages not installed on the VM by default.
 $ sudo vim /etc/apt/sources.list
 # in vim append the following line to the .list file: 
