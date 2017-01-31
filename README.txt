@@ -4,6 +4,8 @@ UPDATE 27/1/17 (2):
 Installed PANDAS:
 $ sudo pip install pandas
 # pandas (0.19.2) 
+$ sudo pip install docopt
+# docopt (0.6.2)
 
 ----------------------------------------------------------------------
 
