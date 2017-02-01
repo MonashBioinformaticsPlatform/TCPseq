@@ -7,8 +7,6 @@ import gzip
 if HAVEPANDAS:
     import pandas as pd
 
-#CWD = '/Users/sarcher/VMs/bioinf/shared_data/projects/sarcher/vagrant_sandbox_230117/TCP_VM/TCPseq/'
-#IN_BED='./tabulated_data/tbl3_169.bed.gz'
 GENE_INFO='./sacCer3/annotation/genetable_dist_to_nextgene.txt'
 MAX_X = 1000
 MIN_X = -1000
@@ -18,8 +16,10 @@ ANCHOR = 'start' # choices: 'start','stop','fp', 'tp'
 MAX_BS=5
 OUT_FN_PREF='./MG_test'
 START_SEED=1
+uORF_FN='' #Ingolia_Table_S3_uORF.txt
+MIN_SCORE=0
 
-options, remainder = getopt.getopt(sys.argv[1:], 'b:g:l:r:f:x:a:p:o:s:c:')
+options, remainder = getopt.getopt(sys.argv[1:], 'b:g:l:r:f:x:a:p:o:s:c:u:e:')
 #print options
 for opt, arg in options:
     if opt in ('-b'):
@@ -45,6 +45,10 @@ for opt, arg in options:
     elif opt in ('-c'):
         CWD=arg
         os.chdir(CWD)
+    elif opt in ('-u'):
+        uORF_FN=arg
+    elif opt in ('-e'):
+        MIN_SCORE = float(arg)
 
 allgenes_dc = dict()
 if HAVEPANDAS:
@@ -65,8 +69,22 @@ else:
             allgenes_dc[splut[0]] = [i, int(splut[9])]
             i+=1
     ngene=i
-            #print splut[1]
-    
+# optional: load uORF coords.
+# col0=gene name; col1=uORF start rel ORF start; col2(optional)=score (must be > MIN_SCORE)
+# Note: can be multiple per gene.
+gene_uORF_offsets = dict()
+if uORF_FN != '':
+    with open(uORF_FN, 'r') as fin:
+        for line in fin:
+            splut = line.rstrip('\n').split('\t')
+            if len(splut) > 2 and float(splut[2]) < MIN_SCORE:
+                continue
+            gene=splut[0]
+            if not gene in gene_uORF_offsets:
+                gene_uORF_offsets[gene] = [int(splut[1])]
+            else:
+                gene_uORF_offsets[gene].extend([int(splut[1])])
+
 # make gene-weights matrix with 1 column per boostrap iteration
 bsweights = np.zeros(MAX_BS*ngene, dtype=np.int).reshape(ngene,MAX_BS) # rows = genes, cols = BS
 for bs in range(0,MAX_BS):
@@ -89,25 +107,36 @@ with gzip.open(IN_BED, 'r') as fin:
             continue
         splut = line.decode().rstrip('\n').split('\t')       
         start=int(splut[1])
-        end=int(splut[2])
-        flen=end-start
+        #end=int(splut[2])
+        flen=int(splut[2])-start
         try:
             gn_data=allgenes_dc[splut[0]] # gn_data[0]=bs_index ; gn_data[1] = orf_len 
         except:
             genes_not_found += 1
-            continue
+            continue  # need gn_data for bootstrap weight vector of gene (not just orf_len)
         curr_gweight = bsweights[gn_data[0],:]
+        
+        gn_offsets = np.array([0]) # by default, already anchored to AUG + 1000 (FLANKING) 
         if ANCHOR == 'stop':  # not tested for OBO errors
-            start=start-gn_data[1]
-            end=end-gn_data[1]
-        if start-FLANKING < MAX_X and start-FLANKING > MIN_X: #<--- -1??
-            if flen+1 < MAX_LEN:
-                joint_agg[flen,start]+=1
-            start_marg[:,start] += curr_gweight
-        if end-FLANKING < MAX_X and end-FLANKING > MIN_X: #<--- -1??
-            end_marg[:,end] += curr_gweight
+            gn_offsets = np.array([gn_data[1]])
+        elif ANCHOR == 'uORFs':
+            try:
+                gn_offsets = np.array(gene_uORF_offsets[splut[0]])
+            except:
+                genes_not_found += 1
+                continue
+        start=start-gn_offsets # convert start to np.array, can have >1 value for uORFs
+        for st in start:
+            end=flen+st
+            if end-FLANKING < MAX_X and end-FLANKING > MIN_X: #<--- -1??
+                end_marg[:,end] += curr_gweight
+            if st-FLANKING < MAX_X and st-FLANKING > MIN_X: #<--- -1??
+                start_marg[:,st] += curr_gweight
+                if flen+1 < MAX_LEN:
+                    joint_agg[flen,st]+=1
+
 if genes_not_found > 0:
-    print "Warning: " + str(genes_not_found) + " reads could not be assigned to genes in " + GENE_INFO
+    print "Warning: " + str(genes_not_found) + " reads could not be assigned to genes in gene information file given."
     
 x_axis = np.arange(MIN_X, MAX_X).reshape(1,MAX_X-MIN_X)
 joint_agg=np.append(x_axis-1, joint_agg , axis=0)   # adjust x-axis by 1 to counter out-by-one error 
