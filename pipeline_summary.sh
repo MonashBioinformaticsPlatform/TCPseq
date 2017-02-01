@@ -144,6 +144,7 @@ done
 # STEP 155.
 # (Optional) Get gene-level metrics
 
+cd tabulated_data
  Rscript ../scripts/gene_level_metrics.R ../../input_data/input_filenames_manual.txt glm_out_
 # Notes:
 # To filter by logical columns, add 3rd argument containing column names (preceding NOT inverts the flags) separated by commas (no spaces), e.g.:
@@ -152,4 +153,26 @@ done
 # UPDATE 30/1/17:
 # For large files the above R process might be killed or error out. An equivalent Python script which will work with large files is now available (requires PANDAS). e.g.:
 # python ../scripts/gene_level_metrics.py ../../input_data/input_filenames_manual.txt glm_out_ NOTmanually_flagged,within_Nagalakshmi_transcript
+
+###################################################################################################################
+# STEP 156. (optional)
+# (Optional) Do gene-wise bootstrapping (100 resamples)
+# Requires python 2.7 with numpy; pandas; docopt. Generates 3 files (start/length joint frequency; bootstrapped start marginal density; bootstrapped end marginal density) 
+
+mkdir mtgn
+for i in $(seq $FNUM); do
+  bn=${FQ_HNDL[$i]}
+  python scripts/metagene_agg.py -b tabulated_data/tbl3_$bn.bed.gz  -g sacCer3/annotation/genetable_dist_to_nextgene.txt -o mtgn/$bn -p 100
+done
+
+###################################################################################################################
+# STEP 157. (optional)
+# Make metagene plots (marginal densities etc.) from bootstrapped data generated in Step 156 above
+# Requires R 3.3.2 with plyr; dplyr; ggplot2; docopt
+# The call to scripts/dens_plt.R takes plotting arguments. For details, enter: Rscript scripts/dens_plt.R -h 
+
+for i in $(seq $FNUM); do
+  bn=${FQ_HNDL[$i]}
+  Rscript scripts/dens_plt.R -i mtgn/$bn -l -60 -r 40
+done
 
