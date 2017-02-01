@@ -45,6 +45,8 @@ user_filters_T = [user_filters[x] for x in T_ind] # Returns colnames in BED file
 
 # import samples info table
 samples2 = pd.read_table(SAMPLES_FN)
+# ensure all cols are interpreted as strings
+samples2 = samples2.astype('str')
 samples = pd.Series.unique(samples2['sample'])
 
 for smp in samples:
