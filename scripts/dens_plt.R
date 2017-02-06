@@ -135,7 +135,7 @@ gr2 = ggplot() +
   theme(panel.grid = element_blank()) + 
   ggtitle(label = 'Marginal FP density, gene-wise bootstrapping')
 
-pdf(file=paste0(OUTFN_PREF, 'mrgn_dens.pdf'), width = OUTWIDTH, height=OUTHEIGHT)
+pdf(file=paste0(OUTFN_PREF, '_mrgn_dens.pdf'), width = OUTWIDTH, height=OUTHEIGHT)
   print(gr2)
 dev.off()
 

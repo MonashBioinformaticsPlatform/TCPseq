@@ -4,6 +4,8 @@ import sys
 import numpy as np
 import os
 import gzip
+import time
+start_time=time.time()
 if HAVEPANDAS:
     import pandas as pd
 
@@ -98,33 +100,32 @@ joint_agg = np.zeros((MAX_X-MIN_X)*(MAX_LEN+1), dtype=np.int).reshape((MAX_LEN+1
 start_marg = np.zeros((MAX_X-MIN_X)*(MAX_BS+1), dtype=np.int).reshape(MAX_BS+1,(MAX_X-MIN_X)) # y-axis is bootstrap #
 end_marg = np.zeros((MAX_X-MIN_X)*(MAX_BS+1), dtype=np.int).reshape(MAX_BS+1,(MAX_X-MIN_X)) # y-axis is bootstrap #
 
-genes_not_found=0
+reads_counted=0
+tot_reads=0
 with gzip.open(IN_BED, 'r') as fin:
     first=True
     for line in fin:
         if first:
             first=False
             continue
-        splut = line.decode().rstrip('\n').split('\t')       
+        tot_reads+=1
+        splut = line.decode().rstrip('\n').split('\t')
+        if ANCHOR == 'uORFs':
+            if not splut[0] in gene_uORF_offsets:
+                continue
+            gn_offsets = np.array(gene_uORF_offsets[splut[0]])
+        else:
+            gn_offsets = np.array([0]) # by default, already anchored to AUG + 1000 (FLANKING) 
         start=int(splut[1])
-        #end=int(splut[2])
         flen=int(splut[2])-start
         try:
             gn_data=allgenes_dc[splut[0]] # gn_data[0]=bs_index ; gn_data[1] = orf_len 
         except:
-            genes_not_found += 1
             continue  # need gn_data for bootstrap weight vector of gene (not just orf_len)
         curr_gweight = bsweights[gn_data[0],:]
-        
-        gn_offsets = np.array([0]) # by default, already anchored to AUG + 1000 (FLANKING) 
+    
         if ANCHOR == 'stop':  # not tested for OBO errors
             gn_offsets = np.array([gn_data[1]])
-        elif ANCHOR == 'uORFs':
-            try:
-                gn_offsets = np.array(gene_uORF_offsets[splut[0]])
-            except:
-                genes_not_found += 1
-                continue
         start=start-gn_offsets # convert start to np.array, can have >1 value for uORFs
         for st in start:
             end=flen+st
@@ -134,9 +135,10 @@ with gzip.open(IN_BED, 'r') as fin:
                 start_marg[:,st] += curr_gweight
                 if flen+1 < MAX_LEN:
                     joint_agg[flen,st]+=1
+        reads_counted+=1
 
-if genes_not_found > 0:
-    print "Warning: " + str(genes_not_found) + " reads could not be assigned to genes in gene information file given."
+if reads_counted < tot_reads:
+    print "Warning: " + str(tot_reads-reads_counted) + " reads (of "+ str(tot_reads) +") could not be assigned to genes in gene information file given."
     
 x_axis = np.arange(MIN_X, MAX_X).reshape(1,MAX_X-MIN_X)
 joint_agg=np.append(x_axis-1, joint_agg , axis=0)   # adjust x-axis by 1 to counter out-by-one error 
@@ -147,3 +149,4 @@ np.savetxt(fname=OUT_FN_PREF+'_jnt.txt', X=np.transpose(joint_agg),fmt='%1d', de
 np.savetxt(fname=OUT_FN_PREF+'_strt.txt', X=np.transpose(start_marg),fmt='%1d', delimiter='\t')
 np.savetxt(fname=OUT_FN_PREF+'_end.txt', X=np.transpose(end_marg),fmt='%1d', delimiter='\t')
 
+print "Time taken to process file " + IN_BED + ": " + str(time.time()-start_time)
