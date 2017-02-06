@@ -19,7 +19,7 @@ for opt, arg in options:
 TCPdir=os.getcwd()
 os.chdir(indir)
 allfiles=glob.glob('*'+search_suffix)
-print str(len(allfiles))+' files found: in "'+indir+ '" with suffix "' + search_suffix + '":'
+print str(len(allfiles))+' files found: in \''+indir+ '\' with suffix \'' + search_suffix + '\':'
 
 com_pref = len(os.path.commonprefix(allfiles))
 com_suff = len(os.path.commonprefix([x[::-1] for x in allfiles]))
