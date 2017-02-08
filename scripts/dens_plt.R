@@ -111,16 +111,21 @@ end_mir=enx[[2]]
 ticks = make_breaks(ROI=ROI, howmany = 5 , br_minor = br_minor)
 
 # make plot of mean-bootstrapped vals with line error bars
-gr1 = ggplot(stt_msd) +
-  geom_vline(xintercept = ticks[[1]], col = '#DFDFDD', size=0.25) +  # artificial vertical gridlines
-  geom_segment(aes(x=pos,xend=pos, y=lowerCI, yend=upperCI), col='#788899') +
-  geom_line(aes(x=pos,y=nonperm)) + #, col=linecol) +
-  scale_x_continuous(limits=ROI, breaks = ticks[[2]], labels = insert_minor(ticks[[1]], br_minor - 1) )  +
-  labs(x = 'pos', y = 'Frequency') + theme_bw() + 
-  theme(panel.grid.minor = element_blank(), panel.grid.major.x = element_blank(), panel.grid.major.y = element_line(colour = '#DFDFDD', size=0.2)) + 
-  ggtitle(label = 'Marginal Density - FP start')
+if(F){
+  gr1 = ggplot(stt_msd) +
+    geom_vline(xintercept = ticks[[1]], col = '#DFDFDD', size=0.25) +  # artificial vertical gridlines
+    geom_segment(aes(x=pos,xend=pos, y=lowerCI, yend=upperCI), col='#788899') +
+    geom_line(aes(x=pos,y=nonperm)) + #, col=linecol) +
+    scale_x_continuous(limits=ROI, breaks = ticks[[2]], labels = insert_minor(ticks[[1]], br_minor - 1) )  +
+    labs(x = 'pos', y = 'Frequency') + theme_bw() + 
+    theme(panel.grid.minor = element_blank(), panel.grid.major.x = element_blank(), panel.grid.major.y = element_line(colour = '#DFDFDD', size=0.2)) + 
+    ggtitle(label = 'Marginal Density - FP start')
+}
 
 # make polygon plot
+max_y_end  = max( end_mir[ end_mir$pos >= min(ROI) & end_mir$pos <= max(ROI),  ]$CIs , na.rm = T)
+max_y_start = max( stt_mir[ stt_mir$pos >= min(ROI) & stt_mir$pos <= max(ROI),  ]$CIs , na.rm = T)
+max_y = max(c(max_y_start, max_y_end))
 gr2 = ggplot() +
   geom_polygon(data = stt_mir[ stt_mir$pos >= min(ROI) & stt_mir$pos <= max(ROI),  ],
                aes(x=pos, y=CIs), fill = "#FF0000", alpha=0.25)+
@@ -131,6 +136,7 @@ gr2 = ggplot() +
   #geom_line(data =end_msd, aes(x=pos,y=mean), col="#0000FF", size=0.8) +
   geom_line(data =end_msd, aes(x=pos,y=nonperm), col="#0000FF", size=0.8) +
   scale_x_continuous(limits=c(min(ROI),max(ROI)), breaks = ticks[[2]], labels = insert_minor(ticks[[1]], br_minor - 1) )  +
+  scale_y_continuous(limits=c(0,max_y)) +
   labs(x = 'pos', y = 'Frequency') + theme_bw()+ 
   theme(panel.grid = element_blank()) + 
   ggtitle(label = 'Marginal FP density, gene-wise bootstrapping')
