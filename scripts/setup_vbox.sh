@@ -86,7 +86,11 @@ source ref_config.sh
 cd sacCer3/annotation
 curl $UTR5P_URL > $UTR5P_FILE
 curl $UTR3P_URL> $UTR3P_FILE
-python ../../scripts/dload_5pUTR_introns.py > FPUTRIntron.txt
+
+# This is failing for an unknown reason to download using intermine.  Stored in repo for now
+#python ../../scripts/dload_5pUTR_introns.py > FPUTRIntron.txt
+cp ../../scripts/FPUTRIntron.txt .
+
 python ../../scripts/transcript_extrem.py -f $UTR5P_FILE -t $UTR3P_FILE -g ../genbank -i FPUTRIntron.txt -b "YLR044C YHR146W YOR203W" > genetable_dist_to_nextgene.txt
 cd ../../
 
