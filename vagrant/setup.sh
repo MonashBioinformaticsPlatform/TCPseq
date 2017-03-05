@@ -2,13 +2,20 @@
 
 # Script to provision a base ubuntu/trusty64 image to run TCPseq 
 
+# Add repository for R 3.3.2
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 51716619E084DAB9
+sudo add-apt-repository 'deb http://cran.cnr.berkeley.edu/bin/linux/ubuntu/ trusty/'
+
 # apt-get packages
 sudo apt-get update
 sudo apt-get install -y build-essential curl git \
                         python-setuptools python-pip python-dev \
                         language-pack-en \
                         openjdk-7-jre-headless
-sudo apt-get install -y samtools r-base-core trimmomatic r-cran-reshape2 r-cran-plyr bowtie2
+sudo apt-get install -y samtools r-base-core=3.3.2-1trusty0 trimmomatic r-cran-reshape2 r-cran-plyr bowtie2
+
+# R packages
+sudo R -e 'install.packages(c("plyr","dplyr","ggplot2","docopt"), repos = "http://cran.us.r-project.org");'
 
 # STAR
 mkdir STAR-tmp && cd STAR-tmp \
@@ -37,6 +44,8 @@ sudo apt-get install -y python-biopython
 # PIP libraries.
 sudo pip install intermine 
 sudo pip install cutadapt
+sudo pip install pandas
+sudo pip install docopt
 
 # Cleanup
 sudo apt-get clean -y
