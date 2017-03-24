@@ -7,6 +7,7 @@ sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 51716619E084DAB9
 sudo add-apt-repository 'deb http://cran.cnr.berkeley.edu/bin/linux/ubuntu/ trusty/'
 
 # apt-get packages
+sudo apt-key update
 sudo apt-get update
 sudo apt-get install -y build-essential curl git \
                         python-setuptools python-pip python-dev \
