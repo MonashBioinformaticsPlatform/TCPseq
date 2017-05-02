@@ -57,7 +57,7 @@ for chr in ${GBK_CHRS[@]};
 do curl $GBK_PREFIX$chr$GBK_SUFFIX.gz | gunzip > genbank/$GBK_FILE_PREFIX$chr$GBK_SUFFIX;
 done
 
-perl ../scripts/make_flanked_spliced_RNAs.pl -5p 50 -3p 50 -t snoRNA misc_RNA -dir genbank -out structRNAs/structRNAs.fa
+perl ../scripts/make_flanked_spliced_RNAs.pl -5p 50 -3p 50 -t snoRNA misc_RNA -dir genbank --whitelist structRNAs/transposon_RNAs.txt  -out structRNAs/structRNAs.fa
 STAR $STAR_BUILD --runMode genomeGenerate --genomeDir structRNAs/STAR --genomeFastaFiles structRNAs/structRNAs.fa
 mv Log.out structRNAs/STAR/
 cd ../

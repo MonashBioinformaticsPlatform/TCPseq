@@ -38,6 +38,7 @@ my $out="Flanked_ORFs_output.txt";
 my $genome_file_term = ('.dat');
 my $exclude_dubious = "no";
 my $external_blacklist = "0";  # <---- FALSE
+my $external_whitelist = "0";  # <---- FALSE
 my @terms;
 #my @terms = ('rRNA','misc_RNA');
 #@terms = ('mRNA', 'misc_RNA', 'ncRNA', 'transcript', 'snoRNA');  # may change this to user input in later version....     -t <transcript types (multiple possible)> -ex <exclusion list file>   -in <inclusion list file> 
@@ -57,7 +58,8 @@ GetOptions ( 'dir=s' => \$dir,
 	     't=s{0,100}' => \@terms,
 	     'k=s' => \$genome_file_term,
 	     'exdub=s' => \$exclude_dubious,
-	     'blacklist=s' => \$external_blacklist);
+	     'blacklist=s' => \$external_blacklist,
+		 'whitelist=s' => \$external_whitelist);
 
 my @errors;
 push @errors, "folder '$dir' not found in current directory " unless (-e $dir);
@@ -109,11 +111,20 @@ if ($external_blacklist) {
     my $blin;
     open($blin, '<', $external_blacklist) or die ("couldn\'t find file $external_blacklist. Quitting.");
     while (<$blin>) {
-	chomp;
-	$blacklisted_genes{$_}='y';
+		chomp;
+		$blacklisted_genes{$_}='y';
     }
 }
 
+my @whitelisted_genes;
+if ($external_whitelist) {
+    my $wlin;
+    open($wlin, '<', $external_whitelist) or die ("couldn\'t find file $external_whitelist. Quitting.");
+    while (<$wlin>) {
+		chomp;
+		push @whitelisted_genes, $_
+    }
+}
 
 #################################### main loop #####################################  
 foreach my $seqfile (@genome_files) {
@@ -155,8 +166,20 @@ foreach my $seqfile (@genome_files) {
 	    push @inc_sf, grep { $_->primary_tag eq $t } @sf;
 	}
 	
+	# add transcripts in whitelist
+	foreach my $feat_ob (@sf){
+		if ($feat_ob->has_tag('gene')){
+			my @name = $feat_ob->get_tag_values('gene');
+			for my $wl (@whitelisted_genes){
+				if ($name[0] eq $wl){
+					push @inc_sf, $feat_ob;
+				}
+			}
+		}
+	}
+	
 	# iterate thru transcripts 
-        foreach my $feat_ob (@inc_sf){  # iterate through mRNAs in contig, put in $feat_ob
+    foreach my $feat_ob (@inc_sf){  # iterate through mRNAs in contig, put in $feat_ob
 	    my @name;
 	    my $exclude_this_feat = ' ';
 	    if ($feat_ob->has_tag('gene')){
