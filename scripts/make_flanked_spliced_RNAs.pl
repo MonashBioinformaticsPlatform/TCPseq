@@ -167,12 +167,24 @@ foreach my $seqfile (@genome_files) {
 	}
 	
 	# add transcripts in whitelist
+	my %already_added;
 	foreach my $feat_ob (@sf){
 		if ($feat_ob->has_tag('gene')){
 			my @name = $feat_ob->get_tag_values('gene');
-			for my $wl (@whitelisted_genes){
-				if ($name[0] eq $wl){
-					push @inc_sf, $feat_ob;
+			my @transcript;
+			if ($feat_ob -> has_tag('transcript_id')){
+				@transcript = $feat_ob -> get_tag_values('transcript_id')  
+			} elsif ($feat_ob->has_tag('note')) {
+				foreach ($feat_ob->get_tag_values('note')){
+				    if ($_ =~ /transcript_id\=(.+)/){push @transcript, $1};  # sometimes the transcript name is hidden away as a "note" 
+				}
+			}
+			if($transcript[0]){ 
+				for my $wl (@whitelisted_genes){
+					if ($name[0] eq $wl & (! $already_added{$name[0]}) ){
+						push @inc_sf, $feat_ob;
+						$already_added{$name[0]} = 'y';
+					}
 				}
 			}
 		}
@@ -200,7 +212,7 @@ foreach my $seqfile (@genome_files) {
 			#$exclude_this_feat .= "Feature with no associated gene OBJECT!  "; # un-comment to exclude these
 	    }
 	    
-            my @transcript;
+        my @transcript;
 	    if ($feat_ob -> has_tag('transcript_id')){
 		@transcript = $feat_ob -> get_tag_values('transcript_id')  
 	    } elsif ($feat_ob->has_tag('note')) {
