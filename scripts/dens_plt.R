@@ -9,6 +9,7 @@ Options:
 -r --rightlim=<nt>       right plot border relative anchor, in nt [default: +50]
 -t --toplim=<nt>         top plot border for fraglen vs pos, in nt [default: 100]
 -b --bottomlim=<nt>      bottom plot border for fraglen vs pos, in nt [default: 0]
+-h --heading=<text>     plot heading to prepend to ggtitle
 --uci=<pc>               upper bootstrapped percentile [default: 97.5]
 --lci=<pc>               lower bootstrapped percentile [default: 2.5]
 --pdfwidth=<in>          pdf width, inches [default: 7]
@@ -40,6 +41,7 @@ LO_CI=as.numeric(options$lci)/100
 OUTWIDTH = as.numeric(options$pdfwidth)
 OUTHEIGHT = as.numeric(options$pdfheight)
 ANCHOR=options$anchor
+PLOT_HEADING=options$heading
 
 library(ggplot2)
 library(plyr)
@@ -70,10 +72,10 @@ normed_bstrap <- function(perm_res2, upperCI = UP_CI, lowerCI = LO_CI, binwidth=
     return( dout)
   },
   datacols)
-  perm_resN = perm_res2[,which(!colnames(perm_res2) %in% c('pos', 'bin_pos'))]
+  perm_resN = perm_res2[,which(!colnames(perm_res2) %in% c('pos', 'bin_pos')), drop=F]
   perm_resN = t(t(perm_resN)/(pmax(1,colSums(perm_resN)))) # if zero counts, set colsums of perm_resN to 1
   nonperm_N=perm_resN[,colnames(perm_resN) == 'nonperm']
-  perm_resN=perm_resN[, which(!colnames(perm_resN) == 'nonperm')] # remove non-permuted column, stored normed data from this in nonperm_N vector
+  perm_resN=perm_resN[, which(!colnames(perm_resN) == 'nonperm'), drop=F] # remove non-permuted column, stored normed data from this in nonperm_N vector
   perm_msd = data.frame( pos = posrange,
                          mean=rowMeans(perm_resN),
                          upperCI=apply(perm_resN, MARGIN = 1, FUN = function(x){return(quantile(x, upperCI))}  ),
@@ -119,7 +121,7 @@ if(F){
     scale_x_continuous(limits=ROI, breaks = ticks[[2]], labels = insert_minor(ticks[[1]], br_minor - 1) )  +
     labs(x = 'pos', y = 'Frequency') + theme_bw() + 
     theme(panel.grid.minor = element_blank(), panel.grid.major.x = element_blank(), panel.grid.major.y = element_line(colour = '#DFDFDD', size=0.2)) + 
-    ggtitle(label = 'Marginal Density - FP start')
+    ggtitle(label = paste0(PLOT_HEADING, ' Marginal Density - FP start '))
 }
 
 # make polygon plot
@@ -139,7 +141,7 @@ gr2 = ggplot() +
   scale_y_continuous(limits=c(0,max_y)) +
   labs(x = 'pos', y = 'Frequency') + theme_bw()+ 
   theme(panel.grid = element_blank()) + 
-  ggtitle(label = 'Marginal FP density, gene-wise bootstrapping')
+  ggtitle(label = paste0(PLOT_HEADING, ' Marginal FP density, gene-wise bootstrapping '))
 
 pdf(file=paste0(OUTFN_PREF, '_mrgn_dens.pdf'), width = OUTWIDTH, height=OUTHEIGHT)
   print(gr2)
