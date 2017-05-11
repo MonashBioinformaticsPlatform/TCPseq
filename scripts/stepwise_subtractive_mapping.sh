@@ -15,5 +15,5 @@ for i in $(seq $FNUM); do
   STAR --outSAMunmapped Within --genomeDir $SRI_S --runThreadN $NCORES --outFilterMultimapNmax 20000  \
     --readFilesIn <(zcat norRtR_$bn.fq.gz) --outFileNamePrefix RTS_$bn  2>miscmap_star_$bn.txt
   # get unmapped reads and also reads that mapped only in reverse orientation
-  python ../scripts/rc_only_from_sam.py -i RTS_$bn\Aligned.out.sam | gzip > noRTS_$bn.fq.gz
+  python ../scripts/rc_only_from_sam.py -i RTS_$bn\Aligned.out.sam -f ../trimmed/m14_fpc_pA_tr_$bn.fq.gz | gzip > noRTS_$bn.fq.gz
 done
