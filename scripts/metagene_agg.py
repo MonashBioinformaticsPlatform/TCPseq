@@ -8,6 +8,22 @@ import time
 start_time=time.time()
 if HAVEPANDAS:
     import pandas as pd
+    
+def coerce_num(s):
+    try:
+        return int(s)
+    except ValueError:
+        return float(s)
+
+def make_comparison(x, op, thresh, na_to_false=True):
+    if na_to_false and x == 'NA':
+        return(False)
+    if op == '==':
+        return(x == thresh)
+    if op == '<':
+        return(coerce_num(x) < thresh) # assumes 'thresh' has already been coerced to num!
+    if op == '>':
+        return(coerce_num(x) > thresh)
 
 GENE_INFO='./sacCer3/annotation/genetable_dist_to_nextgene.txt'
 MAX_X = 1000
@@ -20,9 +36,11 @@ OUT_FN_PREF='./MG_test'
 START_SEED=1
 uORF_FN='' #Ingolia_Table_S3_uORF.txt
 MIN_SCORE=0
-
-options, remainder = getopt.getopt(sys.argv[1:], 'b:g:l:r:f:x:a:p:o:s:c:u:e:')
+INSTRING='fred>10;wilma==FALSE'
+INFILTS=''
+options, remainder = getopt.getopt(sys.argv[1:], 'b:g:l:r:f:x:a:p:o:s:c:u:e:z:h:')
 #print options
+
 for opt, arg in options:
     if opt in ('-b'):
         IN_BED=arg
@@ -51,7 +69,22 @@ for opt, arg in options:
         uORF_FN=arg
     elif opt in ('-e'):
         MIN_SCORE = float(arg)
+    elif opt in ('-z'):
+        INFILTS=arg.split(',')
+    elif opt in ('-h'):
+        LEN_HIST_COL=arg
 
+col_ineqs=dict()
+comparison_ops=list(['==','<','>'])
+for entry in INFILTS:
+    for co in comparison_ops:
+        if co in entry:
+            splut=entry.split(co)
+            if co == '==':
+                col_ineqs[splut[0]] = list([co, splut[1]])
+            else:
+                col_ineqs[splut[0]] = list([co, coerce_num(splut[1])])
+    
 allgenes_dc = dict()
 if HAVEPANDAS:
     genes_df = pd.read_table(GENE_INFO,sep='\t')
@@ -102,14 +135,36 @@ end_marg = np.zeros((MAX_X-MIN_X)*(MAX_BS+1), dtype=np.int).reshape(MAX_BS+1,(MA
 
 reads_counted=0
 tot_reads=0
+excluded=0
+gns_19_1003 = dict()
+col_ineqs_indices=dict()
+len_hist_colnum=-1
+print 'Start Time: ' + str(time.time()-start_time)
+
 with gzip.open(IN_BED, 'r') as fin:
     first=True
     for line in fin:
-        if first:
+        splut = line.decode().rstrip('\n').split('\t')
+        if first:  # process column names
             first=False
+            for i in range(len(splut)):
+                if splut[i] in col_ineqs:
+                    col_ineqs_indices[i]=col_ineqs[splut[i]]  #
+                if splut[i] == LEN_HIST_COL:
+                    len_hist_colnum=i
+            if LEN_HIST_COL != '' and len_hist_colnum == -1:
+                print "Warning: length hist column name not found in bed file. Will not produce subcategorized fragment length data."
             continue
         tot_reads+=1
-        splut = line.decode().rstrip('\n').split('\t')
+        if tot_reads % 1000000 == 0:
+             print  "Reads processed: " + str(tot_reads) + ". Time: "+ str(time.time()-start_time) + "  (from file "+ IN_BED + ")."
+        excludethis=False
+        for filtcol in col_ineqs_indices:
+             if not make_comparison(x = splut[filtcol], op = col_ineqs_indices[filtcol][0], thresh = col_ineqs_indices[filtcol][1]):
+                 excludethis=True
+        if excludethis:
+            excluded+=1
+            continue
         if ANCHOR == 'uORFs':
             if not splut[0] in gene_uORF_offsets:
                 continue
@@ -123,8 +178,7 @@ with gzip.open(IN_BED, 'r') as fin:
         except:
             continue  # need gn_data for bootstrap weight vector of gene (not just orf_len)
         curr_gweight = bsweights[gn_data[0],:]
-    
-        if ANCHOR == 'stop':  # not tested for OBO errors
+        if ANCHOR == 'stop':  # not yet tested for out-by-one errors
             gn_offsets = np.array([gn_data[1]])
         start=start-gn_offsets # convert start to np.array, can have >1 value for uORFs
         for st in start:
@@ -137,8 +191,10 @@ with gzip.open(IN_BED, 'r') as fin:
                     joint_agg[flen,st]+=1
         reads_counted+=1
 
+print str(reads_counted) + " reads included in output."
 if reads_counted < tot_reads:
-    print "Warning: " + str(tot_reads-reads_counted) + " reads (of "+ str(tot_reads) +") could not be assigned to genes in gene information file given."
+    print "Warning: " + str(tot_reads-reads_counted) + " reads (of "+ str(tot_reads) +") could not be assigned to genes using provided filters and gene information file."
+    print str(excluded) + " of these were excluded by user-defined filters."
     
 x_axis = np.arange(MIN_X, MAX_X).reshape(1,MAX_X-MIN_X)
 joint_agg=np.append(x_axis-1, joint_agg , axis=0)   # adjust x-axis by 1 to counter out-by-one error 
