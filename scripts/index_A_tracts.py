@@ -83,7 +83,7 @@ for i in range(len(seq)-1, -1, -1):
         A_count = 0
     A_tracts[i] = A_count
 wg_index[gene] = A_tracts
-
+gene_len[gene] = len(seq)
 
 ########################
 # output of sam2table_v2 is:
@@ -138,10 +138,10 @@ for fn_in in tbl_fns:
                 bedline=[ splut[i] for i in [1,2,12,0,8,11,9,10,7] ]
                 if int(bedline[2]) == 1001:
                     if not pA=='1':
-                        print >> sys.stderr, "Warning: 1nt upstream of ATG didn't give pA of 1!!! line:\n"
-                        print '---'+str(len(splut))+'---'
-                        print splut
-                        print 'New bed file line:'
-                        print bedline
+                        print >> sys.stderr, "Warning: 1nt upstream of ATG didn't give pA of 1!!! line:"
+                        print >> sys.stderr, '---'+str(len(splut))+' elements ---'
+                        print >> sys.stderr, splut
+                        print >> sys.stderr, 'New bed file line:'
+                        print >> sys.stderr, bedline
                 count += 1
                 print  >> fout, "\t".join(str(x) for x in bedline)
