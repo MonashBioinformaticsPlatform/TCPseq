@@ -14,6 +14,7 @@ Options:
 --pdfwidth=<in>          pdf width, inches [default: 7]
 --pdfheight=<in>         pdf height, inches [default: 7]
 --anchor=<anchor>        point around which ORFs were anchored by metagene_agg.py [default: start]
+--normdens_within        normalize joint density to max value *within* the plot [default: FALSE]
 " -> doc
 options = docopt(doc = doc)
 INFN_PREFIX = options$inpref
@@ -40,6 +41,7 @@ LO_CI=as.numeric(options$lci)/100
 OUTWIDTH = as.numeric(options$pdfwidth)
 OUTHEIGHT = as.numeric(options$pdfheight)
 ANCHOR=options$anchor
+NORM_WITHIN_PLT=as.logical(options$normdens_within)
 
 library(ggplot2)
 library(plyr)
@@ -209,7 +211,7 @@ plot_joint_frq <- function(dens_df, xlim_s=c(-100,100), ylim_s=c(0,100), legend=
   return (gr)
 }
 
-gr3=plot_joint_frq(dens_df = slfrq, xlim_s = ROI, legend = T, add_tickbreaks =F, zeroline = F, ybreak=5, ylim_s=FLEN_LIM)
+gr3=plot_joint_frq(dens_df = slfrq, xlim_s = ROI, legend = T, add_tickbreaks =F, zeroline = F, ybreak=5, ylim_s=FLEN_LIM, maxdens_within_xlim = NORM_WITHIN_PLT)
 pdf(file=paste0(OUTFN_PREF, '_fl_pos_jnt.pdf'), width = OUTWIDTH, height=OUTHEIGHT)
   print(gr3)
 dev.off()
