@@ -256,9 +256,9 @@ foreach my $seqfile (@genome_files) {
 	    my $UTR_5p = $fpdf;
             my $UTR_3p = $tpdf;
             if (exists($gene_UTRs{$name[0]})){ #override defaults if UTR lengths for GENE name specified in UTR table file
-		$UTR_5p = $gene_UTRs{$name[0]}[0];
+                $UTR_5p = $gene_UTRs{$name[0]}[0];
                 $UTR_3p = $gene_UTRs{$name[0]}[1];
-		$UTR_count ++;
+ $UTR_count ++;
             }
             my $UTRseq_5p="";
             my $UTRseq_3p="";
@@ -276,7 +276,9 @@ foreach my $seqfile (@genome_files) {
             }
 	    	    
 	    my (@exons) = get_exons($feat_ob, $contig_seq);
-	    my $feat_seq = pop @exons; 
+	    my $feat_seq = pop @exons;
+		$UTRseq_5p = "N"x($UTR_5p - length $UTRseq_5p).$UTRseq_5p;  # pad flanking with Ns if too short (because near edge of chromosome) 
+		$UTRseq_3p = $UTRseq_3p.("N"x($UTR_3p - length $UTRseq_3p));		
 	    $feat_seq = $UTRseq_5p.$feat_seq.$UTRseq_3p;  	#add UTRs to $feat_seq
 	    
             
@@ -285,7 +287,7 @@ foreach my $seqfile (@genome_files) {
 	    }
 	    my $orf_seqobj = Bio::Seq->new( -seq => $feat_seq,
                                  -id  => $transcript[0] );
-    
+
 	    $seq_out->write_seq($orf_seqobj);    
         }
 	print "\r                                                                                                      ";
@@ -339,8 +341,6 @@ sub get_exons { # make a 2-element array in @exons for converting spliced coords
 			$exseq = rev_comp($exseq) if ($exonobs[$i]->strand eq '-1');
 			
 			if ($i==0){
-				#$prev_ex_right = $exonobs[0]->end; # in this case $prev_ex_end is for the current exon
-				#my $ex_left = $exonobs[0]->start;
 				$prev_ex_right = $ex_right; # in the case of exon 1, $prev_ex_end is for the current exon
 				$spliced_seqstr = $exseq;
 				$exons[0][0] = ($ex_len-1); #exon 1 length for spliced coord of exon 1 end, not affected by strand
@@ -350,20 +350,13 @@ sub get_exons { # make a 2-element array in @exons for converting spliced coords
 					$exons[1][0] = $ex_right; # exon end is actually start of last exon from transcript's perspective
 					$prev_ex_right=$ex_left;
 				}
-			}else{
-				#my $ex_left = $exonobs[$i]->start; # increment cumulative spliced exon end pos by current exon size
-				#my $ex_right = $exonobs[$i]->end; 
-				
-				#my $exseq = substr $chromosome_seq, $ex_left-1, ($ex_right-$ex_left)+1;
-				#$exseq = rev_comp($exseq) if ($exonobs[$i]->strand eq '-1');
-				
+			}else{				
 				$exons[0][$i] = $exons[0][$i-1] + ($ex_len-1);  # add new exon length to cumulative spliced length
+				$spliced_seqstr .= $exseq;
 				if ($strand eq '1'){
-					$spliced_seqstr .= $exseq;
 					$exons[1][$i] = $exons[1][$i-1] -1 + $ex_left - $prev_ex_right;
 					$prev_ex_right = $ex_right;  # save value for next time to reduce computation load
 				} else{ 
-					$spliced_seqstr = $exseq.$spliced_seqstr;  # add it on at the START of string; this can make it consistent with Bioperl for mm_alt_Mm_Celera_chr*.gbk
 					$exons[1][$i] = $exons[1][$i-1] +1 - abs($prev_ex_right - $ex_right); # $prev_exon_end is LEFT side of previous exon if strand = -1;  abs($prev_ex_end - $ex_right) is the length of the preceding intron from transcript's prespective 
 					$prev_ex_right=$ex_left;
 				}
